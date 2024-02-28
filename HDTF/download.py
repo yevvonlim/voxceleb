@@ -159,7 +159,7 @@ def download_video(video_id, download_path, resolution: int=None, video_format="
 
     Copy-pasted from https://github.com/ytdl-org/youtube-dl
     """
-    # if os.path.isfile(download_path): return True # File already exists
+    if os.path.isfile(download_path): return True # File already exists
     if log_file is None:
         stderr = subprocess.DEVNULL
     else:

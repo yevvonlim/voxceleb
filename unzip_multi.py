@@ -27,7 +27,7 @@ def multi_thread_unzip(zip_file, extract_path, num_threads):
         futures = [executor.submit(unzip_file, zip_file, extract_path) for _ in range(num_threads)]
 
         # Wait for all tasks to complete
-        for future in futures:
+        for future in tqdm(futures, total=len(futures)):
             future.result()
 
 def multi_thread_and_process_unzip(zip_files, extract_path, num_threads, num_processes):
@@ -36,7 +36,7 @@ def multi_thread_and_process_unzip(zip_files, extract_path, num_threads, num_pro
         process_futures = [process_executor.submit(multi_thread_unzip, zip_file, extract_path, num_threads) for zip_file in zip_files]
 
         # Wait for all multiprocessing tasks to complete
-        for future in tqdm(process_futures, total=len(process_futures)):
+        for future in process_futures:
             future.result()
 
 def main():
