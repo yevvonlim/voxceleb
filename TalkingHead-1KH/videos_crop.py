@@ -24,12 +24,14 @@ parser.add_argument('--num_workers', type=int, default=16,
 args = parser.parse_args()
 
 
-def get_h_w(filepath):
+def get_h_w_fps(filepath):
     probe = ffmpeg.probe(filepath)
     video_stream = next((stream for stream in probe['streams'] if stream['codec_type'] == 'video'), None)
     height = int(video_stream['height'])
     width = int(video_stream['width'])
-    return height, width
+    fps = video_stream['r_frame_rate']
+    fps = int(fps.split('/')[0]) / int(fps.split('/')[1])
+    return height, width, fps
 
 
 def trim_and_crop(input_dir, output_dir, clip_params):
@@ -45,17 +47,40 @@ def trim_and_crop(input_dir, output_dir, clip_params):
     if not os.path.exists(input_filepath):
         print('Input file %s does not exist, skipping' % (input_filepath))
         return
-
-    h, w = get_h_w(input_filepath)
+    # get video's fps
+    h, w, fps = get_h_w_fps(input_filepath)
     t = int(T / H * h)
     b = int(B / H * h)
     l = int(L / W * w)
     r = int(R / W * w)
+    st, end = float(S/fps), float(E/fps)
+
     stream = ffmpeg.input(input_filepath)
-    stream = ffmpeg.trim(stream, start_frame=S, end_frame=E+1)
-    stream = ffmpeg.crop(stream, l, t, r-l, b-t)
-    stream = ffmpeg.output(stream, output_filepath)
-    ffmpeg.run(stream)
+    stream_v = stream.video
+    stream_v = ffmpeg.trim(stream_v, start_frame=S, end_frame=E+1)
+    stream_v = ffmpeg.crop(stream_v, l, t, r-l, b-t)
+    stream_v = stream_v.setpts('PTS-STARTPTS')
+    stream_v = ffmpeg.output(stream_v, output_filepath)
+    ffmpeg.run(stream_v)
+
+
+    auido_output_filepath = output_filepath.replace('.mp4', '.wav')
+    auido_input_filepath = input_filepath.replace('.mp4', '.aac')
+    stream_a = ffmpeg.input(auido_input_filepath).audio
+    aud = (
+        stream_a
+        .filter_('atrim', start=st, end=end)
+        .filter_('asetpts', 'PTS-STARTPTS')
+        .output(auido_output_filepath)
+        .run()
+    )
+
+    
+
+    # stream_a = stream_a.filter('atrim', start=S, end=E+1)
+    # stream_a = stream_a.filter_('atrim', start=S, end=E+1).filter_('asetpts', 'PTS-STARTPTS')
+    # stream_a = ffmpeg.output(stream_a, auido_output_filepath)
+    # ffmpeg.run(stream_a)
 
 
 if __name__ == '__main__':

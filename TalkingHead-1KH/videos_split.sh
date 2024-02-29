@@ -9,3 +9,9 @@ do
   y=${f##*/};
   ffmpeg -i $f -c copy -map 0 -segment_time 00:01:00 -f segment $out_dir/${y/.mp4}_%04d.mp4;
 done
+
+for f in $in_dir/*.aac
+do
+  y=${f##*/};
+  ffmpeg -y -i $f -acodec copy -map 0 -segment_time 00:01:00 -f segment $out_dir/${y/.aac}_%04d.aac;
+done

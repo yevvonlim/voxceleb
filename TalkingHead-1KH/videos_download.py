@@ -25,10 +25,11 @@ def download_video(output_dir, video_id):
             # Download the highest quality mp4 stream.
             yt = YouTube('https://www.youtube.com/watch?v=%s' % (video_id),)
                         #  request_headers={'cookie': 'ns=yt&el=adunit&cpn=1oJ25nigKl8rWjFE&ver=2&cmt=5.368&fmt=399&fs=0&rt=78.802&adformat=15_2_1&content_v=sDDHIu6nwUs&euri&lact=39&cl=610595970&state=paused&volume=67&cbrand=apple&cbr=Chrome&cbrver=122.0.0.0&c=WEB&cver=2.20240224.11.00&cplayer=UNIPLAYER&cos=Macintosh&cosver=10_15_7&cplatform=DESKTOP&autoplay=1&final=1&delay=28&hl=ko_KR&cr=KR&uga=m24&len=90.021&afmt=251&idpj=-1&ldpj=-1&st=5.368&et=5.368&muted=0&docid=aS2C1K3W4WQ&ei=2YbfZYKqA5yM0-kPl-2DqAY&plid=AAYSdf9dsG8E8cZo&referrer=https%3A%2F%2Fwww.youtube.com%2F&sdetail=p%3A%2F&sourceid=y&aqi=2IbfZbukKfeX7OsPuI4y&of=Mg8W3EO7C5lVkSK-XkCiUA&vm=CAEQABgEOjJBSHFpSlRKTFRjZU80UzBFRDBXOFhzckxxZmN0WXlZazJkSUxvOFA2OHdMYmxqcF9XUWJuQVBta0tESXpKN1JMUk5qZWxsREdjOWJ1SkJDdTlRdm1fTWx4bGVrZndhTHBXRHVYMFBuc0Vwc1FKMkhIWTlzZ3d5ejZ1elFKb1FZMWpRSXU0eVVrM3RLRVplZzFkUWtuTTBvejVUU1BFYURBd2doAg&host_cpn=BSYaRrpVBQsvEEmb'})
-            stream = yt.streams.filter(subtype='mp4', only_video=True, adaptive=True).first()
-            if stream is None:
-                stream = yt.streams.filter(subtype='mp4').first()
-            stream.download(output_path=output_dir, filename=video_id + '.mp4')
+            stream_vid = yt.streams.filter(subtype='mp4', only_video=True, adaptive=True).first()
+            stream_audio = yt.streams.filter(subtype='mp4', only_audio=True, adaptive=True).first()
+
+            stream_vid.download(output_path=output_dir, filename=video_id + '.mp4')
+            stream_audio.download(output_path=output_dir, filename=video_id + '.aac')
         except Exception as e:
             print(e)
             print('Failed to download %s' % (video_id))
